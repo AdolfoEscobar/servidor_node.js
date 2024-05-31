@@ -1,38 +1,81 @@
 const http = require('http');
 const fs = require('fs');
 
-const server = http.createServer((req, res) => {
-    const { url } = req;
+http.createServer((request, response) => {
+    const file = request.url === '/' ? './WWW/index.html' : `./WWW${request.url}`;
 
-    // Ruta /ok
-    if (url === '/ok') {
-        res.writeHead(200, { 'Content-Type': 'text/plain' });
-        res.end('Nombre completo: Adolfo Escobar, Matrícula: 362839');
+    // Manejo de la ruta /ok
+    if (request.url === '/ok') {
+        response.writeHead(200, { 'Content-Type': 'text/plain' });
+        response.end('Nombre completo: Adolfo Escobar, Matrícula: 362839');
     }
-    // Ruta /ohno
-    else if (url === '/ohno') {
-        res.writeHead(500, { 'Content-Type': 'text/plain' });
-        res.end('El servidor explotó');
+    // Manejo de la ruta /ohno
+    else if (request.url === '/ohno') {
+        response.writeHead(500, { 'Content-Type': 'text/plain' });
+        response.end('El servidor exploto');
     }
-    // Ruta /noencontrado
-    else if (url === '/noencontrado') {
-        fs.readFile('caricatura.html', (err, data) => {
+    // Manejo de la ruta /noencontrado
+    else if (request.url === '/noencontrado') {
+        const filePath = './WWW/caricatura.html';
+        fs.readFile(filePath, (err, data) => {
             if (err) {
-                res.writeHead(404, { 'Content-Type': 'text/plain' });
-                res.end('Error 404: No se encontró el recurso solicitado');
+                response.writeHead(404, { 'Content-Type': 'text/plain' });
+                response.end('Archivo no encontrado');
             } else {
-                res.writeHead(404, { 'Content-Type': 'text/html' });
-                res.end(data);
+                const extension = request.url.split('.').pop();
+                switch (extension) {
+                    case 'txt':
+                        response.writeHead(200, { 'Content-Type': 'text/plain' });
+                        break;
+                    case 'html':
+                        response.writeHead(200, { 'Content-Type': 'text/html' });
+                        break;
+                    case 'jpeg':
+                        response.writeHead(200, { 'Content-Type': 'image/jpeg' });
+                        break;
+                    case 'css':
+                        response.writeHead(200, { 'Content-Type': 'text/css' });
+                        break;
+                    case 'js':
+                        response.writeHead(200, { 'Content-Type': 'text/javascript' });
+                        break;
+                }
+                response.write(data);
+                response.end();
+            }
+        });
+    } else {
+        fs.readFile(file, (err, data) => {
+            if (err) {
+                response.writeHead(404, { 'Content-Type': 'text/plain' });
+                response.write('not found');
+                response.end();
+            } else {
+                const extension = request.url.split('.').pop();
+                switch (extension) {
+                    case 'txt':
+                        response.writeHead(200, { 'Content-Type': 'text/plain' });
+                        break;
+                    case 'html':
+                        response.writeHead(200, { 'Content-Type': 'text/html' });
+                        break;
+                    case 'jpeg':
+                        response.writeHead(200, { 'Content-Type': 'image/jpeg' });
+                        break;
+                    case 'css':
+                        response.writeHead(200, { 'Content-Type': 'text/css' });
+                        break;
+                    case 'js':
+                        response.writeHead(200, { 'Content-Type': 'text/javascript' });
+                        break;
+                }
+                response.write(data);
+                response.end();
             }
         });
     }
-    // Otras rutas
-    else {
-        res.writeHead(404, { 'Content-Type': 'text/plain' });
-        res.end('Error 404: Ruta no encontrada');
-    }
+}).listen(4444, () => {
+    console.log('Servidor corriendo en el puerto 4444...');
 });
 
-server.listen(3000, () => {
-    console.log('Servidor en ejecución en el puerto 3000');
-});
+
